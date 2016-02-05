@@ -225,7 +225,7 @@ module Daru
             vec = @context[ngvector]
             if method_type == :numeric and vec.type == :numeric
               slice = vec[*indexes]
-              single_row << (slice.is_a?(Numeric) ? slice : slice.send(method))
+              single_row << (slice.is_a?(Enumerable) ? slice.send(method) : slice)
             end
           end
 
