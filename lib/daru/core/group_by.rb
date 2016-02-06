@@ -18,11 +18,36 @@ module Daru
         @context = context
         vectors = names.map { |vec| context[vec].to_a }
         tuples  = vectors[0].zip(*vectors[1..-1])
-        keys    = tuples.uniq.sort { |a,b| a && b ? a.compact <=> b.compact : a ? 1 : -1 }
+        # TODO: problem with old group initialization is that it scaled badly when keys
+        # got huge(1-2k+). New implementation doesn't really seem to care. Something something
+        # O(n) vs O(log n)? Just see new group_by benchmark numbers.
+        # keys    = tuples.uniq.sort { |a,b| a && b ? a.compact <=> b.compact : a ? 1 : -1 }
 
-        keys.each do |key|
-          @groups[key] = all_indices_for(tuples, key)
+        # keys.each do |key|
+        #   @groups[key] = all_indices_for(tuples, key)
+        # end
+
+        tuples.each.with_index { |e, i| e << i }
+        t = tuples.group_by { |e| e[0..-2].join }
+        keys = t.sort do |a, b|
+          if a && b
+            a.compact <=> b.compact
+          elsif a
+            1
+          else
+            -1
+          end
         end
+        keys.map! do |_, v|
+          key = v.first[0..-2]
+          indices = v.map(&:last)
+          [key, indices]
+        end
+
+        keys.each do |key, indices|
+          @groups[key] = indices
+        end
+
         @groups.freeze
       end
 
