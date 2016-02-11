@@ -248,8 +248,10 @@ module Daru
           single_row = []
           @non_group_vectors.each do |ngvector|
             vec = @context[ngvector]
+            a = vec.to_a
+
             if method_type == :numeric and vec.type == :numeric
-              slice = vec[*indexes]
+              slice = indexes.map { |i| a[i] }
               single_row << (slice.is_a?(Enumerable) ? slice.send(method) : slice)
             end
           end
