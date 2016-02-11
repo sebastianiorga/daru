@@ -1446,7 +1446,12 @@ module Daru
 
     # Non-destructive version of #sort!
     def sort vector_order, opts={}
-      self.dup.sort! vector_order, opts
+      if self.respond_to?(:deep_dup)
+        self.deep_dup.sort! vector_order, opts
+      else
+        # self.dup.sort! vector_order, opts
+        fail NotImplementedError, "There is no proper non-mutative implementation of this method without using ActiveSupport's deep_dup method."
+      end
     end
 
     # Pivots a data frame on specified vectors and applies an aggregate function

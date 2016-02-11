@@ -246,7 +246,7 @@ module Daru
 
     def find_all_indexes label, level_index, chosen
       if chosen.empty?
-        sorted_labels = true # label == label.sort
+        sorted_labels = label == label.sort
         if sorted_labels
           # take a shortcut if labels are sorted.
           # TODO: are labels ALWAYS sorted?

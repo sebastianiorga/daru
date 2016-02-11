@@ -71,7 +71,7 @@ module Daru
           hash
         end
 
-        # Preprocess headers for detecting and correcting repetition in 
+        # Preprocess headers for detecting and correcting repetition in
         # case the :headers option is not specified.
         unless opts[:headers]
           csv = ::CSV.open(path, 'rb', opts)
@@ -88,7 +88,7 @@ module Daru
           end
         else
           opts[:header_converters] ||= :symbol
-          
+
           csv = ::CSV.read(path, 'rb',opts)
           yield csv if block_given?
 
