@@ -1,18 +1,13 @@
-daru
-====
-
-Data Analysis in RUby
+# daru - Data Analysis in RUby
 
 [![Gem Version](https://badge.fury.io/rb/daru.svg)](http://badge.fury.io/rb/daru)
 [![Build Status](https://travis-ci.org/v0dro/daru.svg)](https://travis-ci.org/v0dro/daru)
 
 ## Introduction
 
-daru (Data Analysis in RUby) is a library for storage, analysis, manipulation and visualization of data.
+daru (Data Analysis in RUby) is a library for storage, analysis, manipulation and visualization of data in Ruby.
 
-daru is inspired by pandas, a very mature solution in Python.
-
-Written in pure Ruby so should work with all ruby implementations. Tested with MRI 2.0, 2.1, 2.2.
+daru makes it easy and intuituive to process data predominantly through 2 data structures: `Daru::DataFrame` and `Daru::Vector`. Written in pure Ruby works with all ruby implementations. Tested with MRI 2.0, 2.1, 2.2 and 2.3.
 
 ## Features
 
@@ -28,7 +23,7 @@ Written in pure Ruby so should work with all ruby implementations. Tested with M
 * Optional speed and space optimization on MRI with [NMatrix](https://github.com/SciRuby/nmatrix) and GSL.
 * Easy splitting, aggregation and grouping of data.
 * Quickly reducing data with pivot tables for quick data summary.
-* Import and export data from and to Excel, CSV, SQL Databases and plain text files.
+* Import and export data from and to Excel, CSV, SQL Databases, ActiveRecord and plain text files.
 
 ## Notebooks
 
@@ -64,6 +59,111 @@ Written in pure Ruby so should work with all ruby implementations. Tested with M
 * [Analysis of Time Series in daru](http://v0dro.github.io/blog/2015/07/31/analysis-of-time-series-in-daru/)
 * [Date Offsets in Daru](http://v0dro.github.io/blog/2015/07/27/date-offsets-in-daru/)
 
+## Basic Usage
+
+daru exposes two major data structures: `DataFrame` and `Vector`. The Vector is a basic 1-D structure corresponding to a labelled Array, while the `DataFrame` - daru's primary data structure - is 2-D spreadsheet-like structure for manipulating and storing data sets.
+
+Basic DataFrame intitialization.
+
+``` ruby
+data_frame = Daru::DataFrame.new(
+  {
+    'Beer' => ['Kingfisher', 'Snow', 'Bud Light', 'Tiger Beer', 'Budweiser'],
+    'Gallons sold' => [500, 400, 450, 200, 250]
+  },
+  index: ['India', 'China', 'USA', 'Malaysia', 'Canada']
+)
+data_frame
+```
+![init0](images/init0.png)
+
+
+Load data from CSV files.
+``` ruby
+df = Daru::DataFrame.from_csv('TradeoffData.csv')
+```
+![init1](images/init1.png)
+
+*Basic Data Manipulation*
+
+Selecting rows.
+``` ruby
+data_frame.row['USA']
+```
+![man0](images/man0.png)
+
+Selecting columns.
+``` ruby
+data_frame['Beer']
+```
+![man1](images/man1.png)
+
+A range of rows.
+``` ruby
+data_frame.row['India'..'USA']
+```
+![man2](images/man2.png)
+
+The first 2 rows.
+``` ruby
+data_frame.first(2)
+```
+![man3](images/man3.png)
+
+The last 2 rows.
+``` ruby
+data_frame.last(2)
+```
+![man4](images/man4.png)
+
+Adding a new column.
+``` ruby
+data_frame['Gallons produced'] = [550, 500, 600, 210, 240]
+```
+![man5](images/man5.png)
+
+Creating a new column based on data in other columns.
+``` ruby
+data_frame['Demand supply gap'] = data_frame['Gallons produced'] - data_frame['Gallons sold']
+```
+![man6](images/man6.png)
+
+*Condition based selection*
+
+Selecting countries based on the number of gallons sold in each. We use a syntax similar to that defined by [Arel](https://github.com/rails/arel), i.e. by using the `where` clause.
+``` ruby
+data_frame.where(data_frame['Gallons sold'].lt(300))
+```
+![con0](images/con0.png)
+
+You can pass a combination of boolean operations into the `#where` method and it should work fine:
+``` ruby
+data_frame.where(
+  data_frame['Beer']
+  .in(['Snow', 'Kingfisher','Tiger Beer'])
+  .and(
+    data_frame['Gallons produced'].gt(520).or(data_frame['Gallons produced'].lt(250))
+  )
+)
+```
+![con1](images/con1.png)
+
+*Plotting* 
+
+Daru supports plotting of interactive graphs with [nyaplot](). You can easily create a plot with the `#plot` method. Here we plot the gallons sold on the Y axis and name of the brand on the X axis in a bar graph.
+``` ruby
+data_frame.plot type: :bar, x: 'Beer', y: 'Gallons sold' do |plot, diagram|
+  plot.x_label "Beer"
+  plot.y_label "Gallons Sold"
+  plot.yrange [0,600]
+  plot.width 500
+  plot.height 400
+end
+```
+![plot0](images/plot0.png)
+
+In addition to nyaplot, daru also supports plotting out of the box with [gnuplotrb](https://github.com/SciRuby/gnuplotrb).
+
 ## Documentation
 
 Docs can be found [here](https://rubygems.org/gems/daru).
@@ -71,8 +171,6 @@ Docs can be found [here](https://rubygems.org/gems/daru).
 ## Roadmap
 
 * Enable creation of DataFrame by only specifying an NMatrix/MDArray in initialize. Vector naming happens automatically (alphabetic) or is specified in an Array.
-* Basic Data manipulation and analysis operations: 
-    - DF concat
 * Assignment of a column to a single number should set the entire column to that number.
 * Multiple column assignment with []=
 * Multiple value assignment for vectors with []=.
